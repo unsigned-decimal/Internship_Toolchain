@@ -1,0 +1,9 @@
+In Progress:
+>
+>
+>
+
+TODO:
+> Change strucute of Model class to disallow usage of uninitialized variables (especially during an object creation)
+>
+>
