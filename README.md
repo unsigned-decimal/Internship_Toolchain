@@ -1,2 +1,2 @@
 # Internship_Toolchain
-Toolchain developed to solve POMDP using Storm
+Toolchain developed to solve POMDPs using Storm
