@@ -1,9 +1,9 @@
 In Progress:
->
->
->
+>   Figure out the proper steps to check a POMDP model
+>   Figure out what the canonic form is used for
+>   Find out why a selective_counter with two states? 
 
 TODO:
-> Change strucute of Model class to disallow usage of uninitialized variables (especially during an object creation)
->
->
+>   Change strucute of Model class to disallow usage of uninitialized variables 
+    (especially during an object creation)
+>   Parametric model support
