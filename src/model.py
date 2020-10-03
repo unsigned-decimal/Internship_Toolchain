@@ -6,6 +6,7 @@ class Model:
 
     def __init__(self, model_file):
         self.file_type = ""
+        self.file_path = ""
         self.properties = None
         self.program = self.load_model(model_file)
         self.model = None
@@ -14,10 +15,11 @@ class Model:
     def load_model(self, model_file):
         self.properties = None
         self.file_type = os.path.splitext(model_file)[1]
+        self.file_path = model_file
         if self.file_type == ".prism":
             return stormpy.parse_prism_program(model_file)
         elif self.file_type == ".drn":
-            return model_file
+            return None
         elif self.file_type == ".jani":
             jani_program, self.properties = stormpy.parse_jani_model(model_file)
             return jani_program
@@ -38,17 +40,19 @@ class Model:
         if self.file_type == ".prism" or self.file_type == ".jani":
             self.model = stormpy.build_model(self.program, self.properties if properties else None)
         elif self.file_type == ".drn":
-            self.model = stormpy.build_model_from_drn(self.program)
+            parser_options = stormpy.DirectEncodingParserOptions()
+            parser_options.build_choice_labels = True
+            self.model = stormpy.build_model_from_drn(self.file_path, parser_options)
         else:
             raise Exception("Model file type not supported") 
 
     def build_pmc(self):
-        #self.model = stormpy.pomdp.make_canonic(self.model)
+        self.model = stormpy.pomdp.make_canonic(self.model)
         self.model = stormpy.pomdp.make_simple(self.model)
         memoryBuilder = stormpy.pomdp.PomdpMemoryBuilder()
-
         memory = memoryBuilder.build(stormpy.pomdp.PomdpMemoryPattern.selective_counter, 2)
         self.model = stormpy.pomdp.unfold_memory(self.model, memory)
+
         self.pmc = stormpy.pomdp.apply_unknown_fsc \
             (self.model, stormpy.pomdp.PomdpFscApplicationMode.simple_linear)
 
