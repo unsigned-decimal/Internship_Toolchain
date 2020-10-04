@@ -1,4 +1,5 @@
-from model import Model
+from pomdp import POMDP
+from pmc import PMC
 import stormpy.examples
 import stormpy.examples.files
 
@@ -6,39 +7,29 @@ def main():
     path1 = "../models/maze.prism"
     path2 = "../models/maze.drn"
     #path3 = "../models/die.jani"
-    m = Model(path1) 
+    pomdp = POMDP(path1) 
 
     p1 = "P=?[F \"goal\"]"
     p2 = "Rmin=?[F \"goal\"]"
     p3 = "P=?[F \"goal\"]"
-    m.parse_properties(p3)
-    m.build_model(properties=True)
-    m.build_pmc()
-    print(m.pmc)
-    result = m.model_checking()
-    '''
-    for state in m.pmc.states:
-        for action in state.actions:
-            for transition in action.transitions:
-                print("State", state, " using action", action," goes to state",\
-                         transition.column," with propability", transition.value())
-    '''
 
-    initial_state = m.pmc.initial_states[0]
-    func = result.at(initial_state)
-    cnt = 0
-    for x in result.get_values():
-        print("value", cnt," =", x.to_smt2())
-        cnt += 1
-    #print(result.get_values())
+    pomdp.parse_properties(p1)
+    pomdp.build_model()
 
-    
-    #m.print_model_type()
-    #m.print_nr_states()
-    #m.print_actions()
-    #m.print_transitions() 
-    
-    
+    pomdp.print_model_type()
+    pomdp.print_nr_states()
+    pomdp.print_actions()
+    pomdp.print_transitions() 
+    print(pomdp.model)
+
+    pmc = PMC(pomdp.build_pmc())
+    pmc.print_model_type()
+    pmc.print_nr_states()
+    pmc.print_actions()
+    pmc.print_transitions()
+    print(pmc.model)
+    pmc.model_checking(pomdp.properties[0])
+    pmc.print_results()
 
 if __name__ == "__main__":
     main()

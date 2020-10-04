@@ -2,7 +2,7 @@ import os
 import stormpy
 import stormpy.pomdp
 
-class Model:
+class POMDP:
 
     def __init__(self, model_file):
         self.file_type = ""
@@ -10,14 +10,13 @@ class Model:
         self.properties = None
         self.program = self.load_model(model_file)
         self.model = None
-        self.pmc = None
         
     def load_model(self, model_file):
         self.properties = None
         self.file_type = os.path.splitext(model_file)[1]
         self.file_path = model_file
         if self.file_type == ".prism":
-            return stormpy.parse_prism_program(model_file)
+            return stormpy.parse_prism_program(model_file, prism_compat=True, simplify=False)
         elif self.file_type == ".drn":
             return None
         elif self.file_type == ".jani":
@@ -25,7 +24,8 @@ class Model:
             return jani_program
         else:
             raise Exception("Model file type not supported") 
-
+    
+    
     def parse_properties(self, properties):
         if self.file_type == ".prism":
             self.properties = stormpy.parse_properties_for_prism_program(properties, self.program)
@@ -35,10 +35,11 @@ class Model:
             self.properties = stormpy.parse_properties_without_context(properties)
         else:
             raise Exception("Model file type not supported")      
+    
 
-    def build_model(self, properties=False):
+    def build_model(self):
         if self.file_type == ".prism" or self.file_type == ".jani":
-            self.model = stormpy.build_model(self.program, self.properties if properties else None)
+            self.model = stormpy.build_model(self.program, self.properties)
         elif self.file_type == ".drn":
             parser_options = stormpy.DirectEncodingParserOptions()
             parser_options.build_choice_labels = True
@@ -53,11 +54,8 @@ class Model:
         memory = memoryBuilder.build(stormpy.pomdp.PomdpMemoryPattern.selective_counter, 2)
         self.model = stormpy.pomdp.unfold_memory(self.model, memory)
 
-        self.pmc = stormpy.pomdp.apply_unknown_fsc \
+        return stormpy.pomdp.apply_unknown_fsc \
             (self.model, stormpy.pomdp.PomdpFscApplicationMode.simple_linear)
-
-    def model_checking(self):
-        return stormpy.model_checking(self.pmc, self.properties[0])
 
     # Print functions
     def print_model_type(self):
