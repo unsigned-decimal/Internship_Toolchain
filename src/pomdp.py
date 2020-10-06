@@ -4,11 +4,11 @@ import stormpy.pomdp
 
 class POMDP:
 
-    def __init__(self, model_file):
+    def __init__(self):
         self.file_type = ""
         self.file_path = ""
         self.properties = None
-        self.program = self.load_model(model_file)
+        self.program = None
         self.model = None
         
     def load_model(self, model_file):
@@ -16,12 +16,12 @@ class POMDP:
         self.file_type = os.path.splitext(model_file)[1]
         self.file_path = model_file
         if self.file_type == ".prism":
-            return stormpy.parse_prism_program(model_file, prism_compat=True, simplify=False)
+            self.program = stormpy.parse_prism_program\
+                (model_file, prism_compat=True, simplify=False)
         elif self.file_type == ".drn":
-            return None
+            self.program = None
         elif self.file_type == ".jani":
-            jani_program, self.properties = stormpy.parse_jani_model(model_file)
-            return jani_program
+            self.program, self.properties = stormpy.parse_jani_model(model_file)
         else:
             raise Exception("Model file type not supported") 
     
