@@ -6,30 +6,67 @@ import stormpy.examples.files
 import stormpy.pars
 from pycarl.cln.cln import Rational
 import time
-def main():
-    path1 = "../models/maze.prism"
-    path2 = "../models/maze.drn"
-    #path3 = "../models/die.jani"
-    path4 = "../models/network2.prism"
+
+def main_prism():
+    print("***** Starting main_prism *****")
+    path_maze = "../models/maze.prism"
+    path_network = "../models/network2.prism"
     pomdp = POMDP()
-    pomdp.load_model(path1) 
+    pomdp.load_model(path_maze) 
 
-    p1 = "R=?[F \"goal\"]"
-    p2 = "R<1[F \"goal\"]"
-    p3 = "P>=0.7[X s=0]"
-    p4 = "R{\"dropped_packets\"}min=?[F sched=0 & t=T-1 & k=K-1 ]"
+    prop_maze = "R=?[F \"goal\"]"
+    prop_network = "R{\"dropped_packets\"}min=?[F sched=0 & t=T-1 & k=K-1 ]"
 
-    pomdp.parse_properties(p1)
+    pomdp.parse_properties(prop_maze)
     pomdp.build_model()
     print(pomdp.model)
 
     pmc = PMC(pomdp.build_pmc())
     print(pmc.model)
+
     pmc.set_parameters([0.4 for _ in range(pmc.nr_parameters)])
     pmc.model_checking(pomdp.properties[0])
-    #pmc.print_results()
+    pmc.print_results()
+
+    print("***** Program End *****")
+
+def main_drn():
+    print("***** Starting main_drn *****")
+    path_maze = "../models/maze.drn"
+    pomdp = POMDP()
+    pomdp.load_model(path_maze) 
+
+    prop_maze = "R=?[F \"goal\"]"
+    p2 = "R<1[F \"goal\"]"
+    p3 = "P>=0.7[X s=0]"
+
+    pomdp.parse_properties(prop_maze)
+    pomdp.build_model()
+
+    #maze.drn has no reward model, so we need to create one.
+    reward_models = {}
+    action_reward = [1.0 for state in pomdp.model.states for action in state.actions]
+    action_reward[0] = 0.0
+    action_reward[-1] = 0.0 
+    reward_models[''] = stormpy.SparseRewardModel(optional_state_action_reward_vector=action_reward)
+
+    components = stormpy.SparseModelComponents(transition_matrix=pomdp.model.transition_matrix\
+        , state_labeling=pomdp.model.labeling, reward_models=reward_models)
+    components.choice_labeling = pomdp.model.choice_labeling
+    components.observability_classes = pomdp.model.observations
+    new_pomdp = stormpy.storage.SparsePomdp(components)
+    pomdp.model = new_pomdp
+    print(pomdp.model)
+
+    pmc = PMC(pomdp.build_pmc())
+    print(pmc.model)
+
+    pmc.set_parameters([0.4 for _ in range(pmc.nr_parameters)])
+    pmc.model_checking(pomdp.properties[0])
+    pmc.print_results()
 
     print("***** Program End *****")
 
 if __name__ == "__main__":
-    main()
+    main_prism()
+    #main_drn()

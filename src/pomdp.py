@@ -47,15 +47,55 @@ class POMDP:
         else:
             raise Exception("Model file type not supported") 
 
-    def build_pmc(self):
+    def build_pmc(self,\
+        pomdp_memory_pattern=stormpy.pomdp.PomdpMemoryPattern.selective_counter,\
+        nr_memory_state=2,\
+        fsc_application_mode=stormpy.pomdp.PomdpFscApplicationMode.simple_linear):
+        
+        # Checking model to determine if it incomplete.  
+        self.check_model()
+
         self.model = stormpy.pomdp.make_canonic(self.model)
         self.model = stormpy.pomdp.make_simple(self.model)
         memoryBuilder = stormpy.pomdp.PomdpMemoryBuilder()
-        memory = memoryBuilder.build(stormpy.pomdp.PomdpMemoryPattern.selective_counter, 2)
+        memory = memoryBuilder.build(pomdp_memory_pattern, nr_memory_state)
         self.model = stormpy.pomdp.unfold_memory(self.model, memory)
 
-        return stormpy.pomdp.apply_unknown_fsc \
-            (self.model, stormpy.pomdp.PomdpFscApplicationMode.simple_linear)
+        return stormpy.pomdp.apply_unknown_fsc(self.model, fsc_application_mode)
+
+    def get_nr_choices(self):
+        choice_cnt = 0
+        for x in range(self.model.nr_states):
+            choice_cnt += self.model.get_nr_available_actions(x)
+        return choice_cnt
+
+    # Check model for invalid or missing components
+    def check_model(self):
+        if not self.has_transition_matrix():
+            raise Exception("The POMDP model does not have a transition matrix")
+
+        if not self.has_state_labels():
+            print("No state labels where found in the POMDP model")
+
+        if not self.has_reward_model():
+            raise Exception("The PODP model is missing reward models")
+
+        if not self.model.has_choice_labeling():
+            raise Exception("The POMDP model does not have choice labels")
+
+        if not self.model.has_state_valuations():
+            print("The POMDP model has not state valuations")
+    
+    def has_transition_matrix(self):
+        return self.model.nr_states > 0 \
+            and self.model.nr_transitions > 0 \
+            and len(self.model.transition_matrix) > 0
+
+    def has_state_labels(self):
+        return len(self.model.labeling.get_labels()) > 0
+
+    def has_reward_model(self):
+        return True if len(self.model.reward_models) > 0 else False
 
     # Print functions
     def print_model_type(self):
