@@ -12,21 +12,24 @@ def main_prism():
     path_maze = "../models/maze.prism"
     path_network = "../models/network2.prism"
     pomdp = POMDP()
-    pomdp.load_model(path_maze) 
+    pomdp.load_model(path_network) 
 
     prop_maze = "R=?[F \"goal\"]"
     prop_network = "R{\"dropped_packets\"}min=?[F sched=0 & t=T-1 & k=K-1 ]"
 
-    pomdp.parse_properties(prop_maze)
+    pomdp.parse_properties(prop_network)
+    if pomdp.has_undefined_constants():
+        pomdp.set_undefined_constants("K=5, T=2")
     pomdp.build_model()
     print(pomdp.model)
 
     pmc = PMC(pomdp.build_pmc())
     print(pmc.model)
-
+    '''
     pmc.set_parameters([0.4 for _ in range(pmc.nr_parameters)])
     pmc.model_checking(pomdp.properties[0])
     pmc.print_results()
+    '''
 
     print("***** Program End *****")
 

@@ -34,8 +34,18 @@ class POMDP:
         elif self.file_type == ".drn":
             self.properties = stormpy.parse_properties_without_context(properties)
         else:
-            raise Exception("Model file type not supported")      
-    
+            raise Exception("Model file type not supported to parse properties")      
+
+    # constants is a String containing a variable name and its value(e.g. "K=4, T=2")
+    def set_undefined_constants(self, constants):
+        desc = stormpy.SymbolicModelDescription(self.program)
+        const = desc.parse_constant_definitions(constants)
+        if self.file_type == ".prism":
+            self.program = desc.instantiate_constants(const).as_prism_program()
+        elif self.file_type == ".jani":
+            self.program = desc.instantiate_constants(const).as_jani_model()
+        else:
+            raise Exception("Model file type not supported to define constants")    
 
     def build_model(self):
         if self.file_type == ".prism" or self.file_type == ".jani":
@@ -45,7 +55,7 @@ class POMDP:
             parser_options.build_choice_labels = True
             self.model = stormpy.build_model_from_drn(self.file_path, parser_options)
         else:
-            raise Exception("Model file type not supported") 
+            raise Exception("Model file type not supported to build models") 
 
     def build_pmc(self,\
         pomdp_memory_pattern=stormpy.pomdp.PomdpMemoryPattern.selective_counter,\
@@ -63,12 +73,6 @@ class POMDP:
 
         return stormpy.pomdp.apply_unknown_fsc(self.model, fsc_application_mode)
 
-    def get_nr_choices(self):
-        choice_cnt = 0
-        for x in range(self.model.nr_states):
-            choice_cnt += self.model.get_nr_available_actions(x)
-        return choice_cnt
-
     # Check model for invalid or missing components
     def check_model(self):
         if not self.has_transition_matrix():
@@ -84,7 +88,7 @@ class POMDP:
             raise Exception("The POMDP model does not have choice labels")
 
         if not self.model.has_state_valuations():
-            print("The POMDP model has not state valuations")
+            print("The POMDP model has no state valuations")
     
     def has_transition_matrix(self):
         return self.model.nr_states > 0 \
@@ -96,13 +100,38 @@ class POMDP:
 
     def has_reward_model(self):
         return True if len(self.model.reward_models) > 0 else False
+    
+    def has_undefined_constants(self):
+        return self.program.has_undefined_constants
+
+    # Get functions
+    def get_model_type(self):
+        return self.model.model_type
+
+    def get_states(self):
+        return self.model.states
+    
+    def get_nr_states(self):
+        return len(self.model.states)
+
+    def get_state_labels(self):
+        return self.model.labeling.get_labels()
+
+    def get_choice_labels(self):
+        return self.model.choice_labeling.get_labels()
+    
+    def get_reward_models(self):
+        return self.model.reward_models
+    
+    def get_observations(self):
+        return self.model.observations
 
     # Print functions
     def print_model_type(self):
-        print("Model type:",self.model.model_type)
+        print("Model type:", self.get_model_type())
 
     def print_nr_states(self):
-        print("Number of states:", self.model.nr_states)
+        print("Number of states:", self.get_nr_states())
     
     def print_actions(self):
         for state in self.model.states:
@@ -114,6 +143,37 @@ class POMDP:
                 for transition in action.transitions:
                     print("State", state, " using action", action," goes to state",\
                          transition.column," with propability", transition.value())
+    
+    def print_observations(self):
+        for i in range(self.get_nr_states()):
+            print("State", i, " has observation", self.model.get_observation(i))
+    
+    def print_rewards(self):
+        for key in self.model.reward_models:
+            reward_model = self.model.reward_models[key]
+            if reward_model.has_state_rewards:
+                print("has state rewards")
+            if reward_model.has_state_action_rewards:
+                self.print_state_action_reward(reward_model.state_action_rewards)
+            if reward_model.has_transition_rewards:
+                print("has transition rewards")
+
+    def print_state_action_reward(self, reward):
+        print("***** State Action Rewards *****")
+        i = 0
+        for state in self.get_states():
+            for action in state.actions:
+                print("State", state, " using action", action, " has a reward of", reward[i])
+                i += 1
+    
+    def print_constants(self):
+        for c in self.program.constants:
+            if c.defined:
+                print("Constant:", c.name, " type:", c.type, " Definition:", c.definition)
+            else:
+                print("Constant:", c.name, " type:", c.type, " Definition: Undefined")
+
+
 
     
 

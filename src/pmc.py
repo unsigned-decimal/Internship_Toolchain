@@ -71,5 +71,10 @@ class PMC:
             print("Result", cnt," =", x)
             cnt += 1
 
+    #TODO
+    #get_parameters
+    #print_parameters
+    #get_nr_parameters
+    #additional tests
     
 
