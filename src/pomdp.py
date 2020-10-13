@@ -25,7 +25,6 @@ class POMDP:
         else:
             raise Exception("Model file type not supported") 
     
-    
     def parse_properties(self, properties):
         if self.file_type == ".prism":
             self.properties = stormpy.parse_properties_for_prism_program(properties, self.program)
@@ -63,7 +62,7 @@ class POMDP:
         fsc_application_mode=stormpy.pomdp.PomdpFscApplicationMode.simple_linear):
         
         # Checking model to determine if it incomplete.  
-        self.check_model()
+        self.inspect_model()
 
         self.model = stormpy.pomdp.make_canonic(self.model)
         self.model = stormpy.pomdp.make_simple(self.model)
@@ -73,8 +72,8 @@ class POMDP:
 
         return stormpy.pomdp.apply_unknown_fsc(self.model, fsc_application_mode)
 
-    # Check model for invalid or missing components
-    def check_model(self):
+    # Inspect model for invalid or missing components
+    def inspect_model(self):
         if not self.has_transition_matrix():
             raise Exception("The POMDP model does not have a transition matrix")
 
@@ -152,11 +151,19 @@ class POMDP:
         for key in self.model.reward_models:
             reward_model = self.model.reward_models[key]
             if reward_model.has_state_rewards:
-                print("has state rewards")
+                self.print_state_reward(reward_model.state_rewards)
             if reward_model.has_state_action_rewards:
                 self.print_state_action_reward(reward_model.state_action_rewards)
             if reward_model.has_transition_rewards:
                 print("has transition rewards")
+
+    def print_state_reward(self, reward):
+        print("***** State Rewards *****")
+        i = 0
+        for state in self.get_states():
+            for action in state.actions:
+                print("State", state, " has a reward of", reward[i])
+                i += 1
 
     def print_state_action_reward(self, reward):
         print("***** State Action Rewards *****")

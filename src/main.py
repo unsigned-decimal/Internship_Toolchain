@@ -7,17 +7,14 @@ import stormpy.pars
 from pycarl.cln.cln import Rational
 import time
 
-def main_prism():
+def main_maze_prism():
     print("***** Starting main_prism *****")
-    path_maze = "../models/maze.prism"
-    path_network = "../models/network2.prism"
+    path = "../models/maze.prism"
+    prop = "R=?[F \"goal\"]"
     pomdp = POMDP()
-    pomdp.load_model(path_network) 
+    pomdp.load_model(path) 
 
-    prop_maze = "R=?[F \"goal\"]"
-    prop_network = "R{\"dropped_packets\"}min=?[F sched=0 & t=T-1 & k=K-1 ]"
-
-    pomdp.parse_properties(prop_network)
+    pomdp.parse_properties(prop)
     if pomdp.has_undefined_constants():
         pomdp.set_undefined_constants("K=5, T=2")
     pomdp.build_model()
@@ -25,25 +22,22 @@ def main_prism():
 
     pmc = PMC(pomdp.build_pmc())
     print(pmc.model)
-    '''
-    pmc.set_parameters([0.4 for _ in range(pmc.nr_parameters)])
+
+    pmc.instantiate_parameters([0.4 for _ in range(pmc.nr_parameters)])
     pmc.model_checking(pomdp.properties[0])
     pmc.print_results()
-    '''
 
     print("***** Program End *****")
 
-def main_drn():
+def main_maze_drn():
     print("***** Starting main_drn *****")
-    path_maze = "../models/maze.drn"
+    path = "../models/maze.drn"
+    prop = "R=?[F \"goal\"]"
+
     pomdp = POMDP()
-    pomdp.load_model(path_maze) 
+    pomdp.load_model(path) 
 
-    prop_maze = "R=?[F \"goal\"]"
-    p2 = "R<1[F \"goal\"]"
-    p3 = "P>=0.7[X s=0]"
-
-    pomdp.parse_properties(prop_maze)
+    pomdp.parse_properties(prop)
     pomdp.build_model()
 
     #maze.drn has no reward model, so we need to create one.
@@ -64,12 +58,36 @@ def main_drn():
     pmc = PMC(pomdp.build_pmc())
     print(pmc.model)
 
-    pmc.set_parameters([0.4 for _ in range(pmc.nr_parameters)])
+    pmc.instantiate_parameters([0.4 for _ in range(pmc.nr_parameters)])
+    pmc.model_checking(pomdp.properties[0])
+    pmc.print_results()
+
+    print("***** Program End *****")
+
+def main_network_prism():
+    print("***** Starting main_prism *****")
+    path = "../models/network2.prism"
+    prop = "R{\"dropped_packets\"}min=?[F sched=0 & t=T-1 & k=K-1 ]"
+
+    pomdp = POMDP()
+    pomdp.load_model(path)
+
+    pomdp.parse_properties(prop)
+    if pomdp.has_undefined_constants():
+        pomdp.set_undefined_constants("K=5, T=2")
+    pomdp.build_model()
+    print(pomdp.model)
+
+    pmc = PMC(pomdp.build_pmc())
+    print(pmc.model)
+
+    pmc.instantiate_parameters([0.4 for _ in range(pmc.nr_parameters)])
     pmc.model_checking(pomdp.properties[0])
     pmc.print_results()
 
     print("***** Program End *****")
 
 if __name__ == "__main__":
-    main_prism()
-    #main_drn()
+    #main_maze_prism()
+    #main_maze_drn()
+    main_network_prism()
