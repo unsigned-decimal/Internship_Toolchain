@@ -1,6 +1,34 @@
 import os
 import stormpy
 import stormpy.pomdp
+from pmc import PMC
+
+def solve_pomdp(model, properties, memory_size=2, 
+                undefined_constants=None, action_reward=None, pmc_parameters=None):
+    pomdp = POMDP()
+    pomdp.load_model(model)
+    pomdp.parse_properties(properties)
+    if not undefined_constants == None:
+        pomdp.set_undefined_constants(undefined_constants)
+
+    pomdp.build_model()
+    if not action_reward == None:
+        reward_models = {}
+        reward_models[''] = stormpy.SparseRewardModel(optional_state_action_reward_vector=action_reward)
+        components = stormpy.SparseModelComponents(transition_matrix=pomdp.model.transition_matrix\
+        , state_labeling=pomdp.model.labeling, reward_models=reward_models)
+    
+        components.choice_labeling = pomdp.model.choice_labeling
+        components.observability_classes = pomdp.model.observations
+        pomdp.model = stormpy.storage.SparsePomdp(components)
+
+    pmc = PMC(pomdp.build_pmc(nr_memory_state=memory_size))
+    pmc.export_parametric_to_drn("test.out")
+    
+    pmc.instantiate_parameters([0.4 for _ in range(pmc.nr_parameters)])
+    pmc.model_checking(pomdp.properties[0])
+    pmc.print_results()
+
 
 class POMDP:
 

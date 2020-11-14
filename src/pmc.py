@@ -4,6 +4,7 @@ import stormpy.pomdp
 import stormpy.pars
 from pycarl.cln.cln import Rational
 import time
+
 class PMC:
 
     def __init__(self, model):
@@ -147,4 +148,5 @@ class PMC:
             print("Result", cnt," =", x)
             cnt += 1
     
-
+    def export_parametric_to_drn(self, file):
+        stormpy.export_parametric_to_drn(self.model, file)

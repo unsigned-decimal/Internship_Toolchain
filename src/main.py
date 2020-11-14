@@ -1,4 +1,4 @@
-from pomdp import POMDP
+from pomdp import *
 from pmc import PMC
 
 import stormpy.examples
@@ -11,12 +11,11 @@ def main_maze_prism():
     print("***** Starting main_prism *****")
     path = "../models/maze.prism"
     prop = "R=?[F \"goal\"]"
+    solve_pomdp(path, prop, pmc_parameters=0.4)
+    '''
     pomdp = POMDP()
     pomdp.load_model(path) 
-
     pomdp.parse_properties(prop)
-    if pomdp.has_undefined_constants():
-        pomdp.set_undefined_constants("K=5, T=2")
     pomdp.build_model()
     print(pomdp.model)
 
@@ -26,6 +25,7 @@ def main_maze_prism():
     pmc.instantiate_parameters([0.4 for _ in range(pmc.nr_parameters)])
     pmc.model_checking(pomdp.properties[0])
     pmc.print_results()
+    '''
 
     print("***** Program End *****")
 
@@ -33,7 +33,10 @@ def main_maze_drn():
     print("***** Starting main_drn *****")
     path = "../models/maze.drn"
     prop = "R=?[F \"goal\"]"
+    action_reward = [1.0 for _ in range(54)]
+    solve_pomdp(path, prop, action_reward=action_reward ,pmc_parameters=0.4)
 
+    ''' 
     pomdp = POMDP()
     pomdp.load_model(path) 
 
@@ -42,6 +45,7 @@ def main_maze_drn():
 
     #maze.drn has no reward model, so we need to create one.
     reward_models = {}
+    
     action_reward = [1.0 for state in pomdp.model.states for action in state.actions]
     action_reward[0] = 0.0
     action_reward[-1] = 0.0 
@@ -61,6 +65,7 @@ def main_maze_drn():
     pmc.instantiate_parameters([0.4 for _ in range(pmc.nr_parameters)])
     pmc.model_checking(pomdp.properties[0])
     pmc.print_results()
+    '''
 
     print("***** Program End *****")
 
@@ -68,7 +73,9 @@ def main_network_prism():
     print("***** Starting main_prism *****")
     path = "../models/network2.prism"
     prop = "R{\"dropped_packets\"}min=?[F sched=0 & t=T-1 & k=K-1 ]"
+    solve_pomdp(path, prop, undefined_constants="K=5, T=2" ,pmc_parameters=0.4)
 
+    '''
     pomdp = POMDP()
     pomdp.load_model(path)
 
@@ -84,10 +91,12 @@ def main_network_prism():
     pmc.instantiate_parameters([0.4 for _ in range(pmc.nr_parameters)])
     pmc.model_checking(pomdp.properties[0])
     pmc.print_results()
+    '''
 
     print("***** Program End *****")
 
 if __name__ == "__main__":
+    #main_test()
     #main_maze_prism()
     #main_maze_drn()
     main_network_prism()
