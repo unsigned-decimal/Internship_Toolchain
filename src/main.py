@@ -1,102 +1,74 @@
-from pomdp import *
-from pmc import PMC
-
+from pomdp_solver import *
 import stormpy.examples
 import stormpy.examples.files
 import stormpy.pars
 from pycarl.cln.cln import Rational
 import time
 
-def main_maze_prism():
-    print("***** Starting main_prism *****")
+def prism_maze():
     path = "../models/maze.prism"
     prop = "R=?[F \"goal\"]"
-    solve_pomdp(path, prop, pmc_parameters=0.4)
-    '''
-    pomdp = POMDP()
-    pomdp.load_model(path) 
-    pomdp.parse_properties(prop)
-    pomdp.build_model()
-    print(pomdp.model)
+    prop ="Rmin=?[F \"goal\" ]"
+    solve_pomdp(path, prop)
 
-    pmc = PMC(pomdp.build_pmc())
-    print(pmc.model)
+def prism_maze2():
+    path = "../models/maze2.prism"
+    prop = "Rmin=?[F \"target\"]"
+    solve_pomdp(path, prop)
 
-    pmc.instantiate_parameters([0.4 for _ in range(pmc.nr_parameters)])
-    pmc.model_checking(pomdp.properties[0])
-    pmc.print_results()
-    '''
-
-    print("***** Program End *****")
-
-def main_maze_drn():
+def drn_maze():
     print("***** Starting main_drn *****")
     path = "../models/maze.drn"
     prop = "R=?[F \"goal\"]"
     action_reward = [1.0 for _ in range(54)]
-    solve_pomdp(path, prop, action_reward=action_reward ,pmc_parameters=0.4)
+    solve_pomdp(path, prop)
 
-    ''' 
-    pomdp = POMDP()
-    pomdp.load_model(path) 
-
-    pomdp.parse_properties(prop)
-    pomdp.build_model()
-
-    #maze.drn has no reward model, so we need to create one.
-    reward_models = {}
-    
-    action_reward = [1.0 for state in pomdp.model.states for action in state.actions]
-    action_reward[0] = 0.0
-    action_reward[-1] = 0.0 
-    reward_models[''] = stormpy.SparseRewardModel(optional_state_action_reward_vector=action_reward)
-
-    components = stormpy.SparseModelComponents(transition_matrix=pomdp.model.transition_matrix\
-        , state_labeling=pomdp.model.labeling, reward_models=reward_models)
-    components.choice_labeling = pomdp.model.choice_labeling
-    components.observability_classes = pomdp.model.observations
-    new_pomdp = stormpy.storage.SparsePomdp(components)
-    pomdp.model = new_pomdp
-    print(pomdp.model)
-
-    pmc = PMC(pomdp.build_pmc())
-    print(pmc.model)
-
-    pmc.instantiate_parameters([0.4 for _ in range(pmc.nr_parameters)])
-    pmc.model_checking(pomdp.properties[0])
-    pmc.print_results()
-    '''
-
-    print("***** Program End *****")
-
-def main_network_prism():
+def prism_network2():
     print("***** Starting main_prism *****")
     path = "../models/network2.prism"
     prop = "R{\"dropped_packets\"}min=?[F sched=0 & t=T-1 & k=K-1 ]"
-    solve_pomdp(path, prop, undefined_constants="K=5, T=2" ,pmc_parameters=0.4)
+    solve_pomdp(path, prop, undefined_constants="K=5, T=2")
 
-    '''
-    pomdp = POMDP()
-    pomdp.load_model(path)
+def prism_3x3grid():
+    path = "../models/3x3grid.prism"
+    prop = "Rmin=? [ F \"goal\" ]"
+    solve_pomdp(path, prop)
 
-    pomdp.parse_properties(prop)
-    if pomdp.has_undefined_constants():
-        pomdp.set_undefined_constants("K=5, T=2")
-    pomdp.build_model()
-    print(pomdp.model)
+def prism_4x4grid():
+    path = "../models/4x4grid.prism"
+    prop = "Rmin=? [ F \"goal\" ]"
+    solve_pomdp(path, prop)
 
-    pmc = PMC(pomdp.build_pmc())
-    print(pmc.model)
+def prism_crypt3():
+    path = "../models/crypt3.prism"
+    prop = "P=? [ F \"goal\" ]"
+    solve_pomdp(path, prop)
 
-    pmc.instantiate_parameters([0.4 for _ in range(pmc.nr_parameters)])
-    pmc.model_checking(pomdp.properties[0])
-    pmc.print_results()
-    '''
+def prism_crypt5():
+    path = "../models/crypt5.prism"
+    prop = "P=? [ F \"goal\" ]"
+    solve_pomdp(path, prop)
 
-    print("***** Program End *****")
+def prism_repudiation():
+    path = "../models/repudiation_pomdp.prism"
+    prop = "Pmax=? [ F \"unfair\" ]"
+    solve_pomdp(path, prop, undefined_constants="K=4")
 
 if __name__ == "__main__":
-    #main_test()
-    #main_maze_prism()
-    #main_maze_drn()
-    main_network_prism()
+    #Division by zero error
+    #prism_maze()
+    #drn_maze()
+    #prism_4x4grid()
+    #prism_network2()
+    prism_maze2()
+
+    #Other errors
+    #prism_crypt3()
+    #prism_crypt5()
+
+    #prism_3x3grid()
+    #prism_repudiation()
+    
+
+
+    
