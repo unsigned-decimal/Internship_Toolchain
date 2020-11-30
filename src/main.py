@@ -56,11 +56,11 @@ def prism_repudiation():
 
 if __name__ == "__main__":
     #Division by zero error
-    #prism_maze()
+    prism_maze()
     #drn_maze()
     #prism_4x4grid()
     #prism_network2()
-    prism_maze2()
+    #prism_maze2()
 
     #Other errors
     #prism_crypt3()

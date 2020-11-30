@@ -14,7 +14,7 @@ def test():
     print("Carl has cln:", pycarl.has_cln())
 '''
 
-def solve_pomdp(model, properties, memory_size=1, 
+def solve_pomdp(model, properties, memory_size=2, 
                 undefined_constants=None, 
                 drn_export_path="temp.drn", 
                 export_instatiated_model=False):
@@ -22,6 +22,7 @@ def solve_pomdp(model, properties, memory_size=1,
     pomdp.load_model(model)
     #pomdp.parse_properties(properties)
     
+    #If the model has undefined constraints we instantiate them.
     if not undefined_constants == None:
         pomdp.set_undefined_constants(undefined_constants)
     pomdp.build_model()
@@ -36,11 +37,15 @@ def solve_pomdp(model, properties, memory_size=1,
         components.observability_classes = pomdp.model.observations
         pomdp.model = stormpy.storage.SparsePomdp(components)
     '''
+    #Unfold memory and apply a fsc to get an pMC
     pmc = PMC(pomdp.build_pmc(nr_memory_state=memory_size))
-    pmc.export_parametric_to_drn(drn_export_path)
+    #Export the pMC to a DRN file
+    pmc.export_to_drn(drn_export_path)
+    #Use the solver script to obtain parameters for the pMC
     result = solver.solve_nominal_pomdp(drn_export_path, properties, 0.99, silent=False)
     print("Result:", result.parameter_values)
     if export_instatiated_model:
+        #Instantiate the pMC and export it
         pmc.instantiate_parameters(list(result.parameter_values.values()))
         pmc.export_to_drn("instantiated_" + drn_export_path)
     
@@ -49,6 +54,7 @@ def solve_pomdp(model, properties, memory_size=1,
 class POMDP:
 
     def __init__(self):
+        #drn, prism or jani
         self.file_type = ""
         self.file_path = ""
         self.properties = None
@@ -81,7 +87,9 @@ class POMDP:
     # constants is a String containing a variable name and its value(e.g. "K=4, T=2")
     def set_undefined_constants(self, constants):
         desc = stormpy.SymbolicModelDescription(self.program)
+        #Parsing the constants
         const = desc.parse_constant_definitions(constants)
+        #Instantiate the constants
         if self.file_type == ".prism":
             self.program = desc.instantiate_constants(const).as_prism_program()
         elif self.file_type == ".jani":
@@ -91,6 +99,7 @@ class POMDP:
 
     def build_model(self):
         if self.file_type == ".prism" or self.file_type == ".jani":
+            #Defining build options to ensure that choice labels remain
             options = stormpy.BuilderOptions()
             options.set_build_state_valuations()
             options.set_build_choice_labels()
@@ -242,18 +251,22 @@ class PMC:
     
     def instantiate_parameters(self, parameter_values):
         parameters = list(self.model.collect_probability_parameters())
+        #Check if the number of parameters equals the number of values
         if len(parameter_values) == len(parameters):
             instantiator = stormpy.pars.PDtmcInstantiator(self.model)
+            #Create a dictionary of parameters to values
             par_dict = dict()
             for x in range(len(parameters)):
                 parameter_x = parameters[x]
                 par_dict[parameter_x] = Rational(parameter_values[x])
+            #Instatiate the model
             self.model = instantiator.instantiate(par_dict)
         else:
             raise Exception("Number of parameter values does not match number of parameters, expected:"\
                 , len(parameters), ", found:", len(parameter_values)) 
 
-    # Perform model checking using a property
+    # Not actually needed since the solver script performs the checking
+    #TODO: Remove
     def model_checking(self, property):
         self.inspect_model()
         self.result = stormpy.model_checking(self.model, property)
@@ -379,8 +392,10 @@ class PMC:
     def export_to_drn(self, file):
         stormpy.export_to_drn(self.model, file)
     
+    '''
     def export_parametric_to_drn(self, file):
         stormpy.export_parametric_to_drn(self.model, file)
+    '''
 
 
     
