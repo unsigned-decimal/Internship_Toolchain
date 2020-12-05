@@ -7,31 +7,34 @@ import time
 
 def prism_maze():
     path = "../models/maze.prism"
-    prop = "R=?[F \"goal\"]"
-    prop ="Rmin=?[F \"goal\" ]"
-    solve_pomdp(path, prop)
-
-def prism_maze2():
-    path = "../models/maze2.prism"
-    prop = "Rmin=?[F \"target\"]"
+    prop ="P=?[F \"goal\" ]"
     solve_pomdp(path, prop)
 
 def drn_maze():
     print("***** Starting main_drn *****")
     path = "../models/maze.drn"
-    prop = "R=?[F \"goal\"]"
-    action_reward = [1.0 for _ in range(54)]
+    prop = "P=?[F \"goal\"]"
     solve_pomdp(path, prop)
 
-def prism_network2():
-    print("***** Starting main_prism *****")
-    path = "../models/network2.prism"
-    prop = "R{\"dropped_packets\"}min=?[F sched=0 & t=T-1 & k=K-1 ]"
-    solve_pomdp(path, prop, undefined_constants="K=5, T=2")
+def prism_maze2():
+    path = "../models/maze2.prism"
+    prop = "P=?[F \"target\"]"
+    solve_pomdp(path, prop)
+
+def drn_maze2():
+    print("***** Starting main_drn *****")
+    path = "../models/maze2.drn"
+    prop = "P=?[F \"target\"]"
+    solve_pomdp(path, prop)
 
 def prism_3x3grid():
     path = "../models/3x3grid.prism"
     prop = "Rmin=? [ F \"goal\" ]"
+    solve_pomdp(path, prop)
+
+def drn_3x3grid():
+    path = "../models/3x3grid.drn"
+    prop = "P=? [ F \"goal\" ]"
     solve_pomdp(path, prop)
 
 def prism_4x4grid():
@@ -39,13 +42,8 @@ def prism_4x4grid():
     prop = "Rmin=? [ F \"goal\" ]"
     solve_pomdp(path, prop)
 
-def prism_crypt3():
-    path = "../models/crypt3.prism"
-    prop = "P=? [ F \"goal\" ]"
-    solve_pomdp(path, prop)
-
-def prism_crypt5():
-    path = "../models/crypt5.prism"
+def drn_4x4grid():
+    path = "../models/4x4grid.drn"
     prop = "P=? [ F \"goal\" ]"
     solve_pomdp(path, prop)
 
@@ -54,21 +52,40 @@ def prism_repudiation():
     prop = "Pmax=? [ F \"unfair\" ]"
     solve_pomdp(path, prop, undefined_constants="K=4")
 
+def prism_aircraft_small():
+    path = "../models/aircraft_small.prism"
+    prop = "P=? [F \"goal\"]"
+    solve_pomdp(path, prop)
+
+def drn_aircraft_small():
+    path = "../models/aircraft_small.drn"
+    prop = "P=? [F \"goal\"]"
+    solve_pomdp(path, prop)
+
+def prism_aircraft():
+    path = "../models/aircraft.prism"
+    prop = "P=? [F \"goal\"]"
+    solve_pomdp(path, prop)
+
+def drn_aircraft():
+    path = "../models/aircraft.prism"
+    prop = "P=? [F \"goal\"]"
+    solve_pomdp(path, prop)
+
 if __name__ == "__main__":
-    #Division by zero error
     prism_maze()
     #drn_maze()
-    #prism_4x4grid()
-    #prism_network2()
     #prism_maze2()
-
-    #Other errors
-    #prism_crypt3()
-    #prism_crypt5()
-
+    #drn_maze2()
     #prism_3x3grid()
+    #drn_3x3grid()
+    #prism_4x4grid()
+    #drn_4x4grid()
     #prism_repudiation()
-    
+    #prism_aircraft_small()
+    #drn_aircraft_small()
+    #prism_aircraft()
+    #drn_aircraft()
 
 
     

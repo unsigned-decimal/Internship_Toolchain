@@ -43,10 +43,10 @@ def solve_pomdp(model, properties, memory_size=2,
     pmc.export_to_drn(drn_export_path)
     #Use the solver script to obtain parameters for the pMC
     result = solver.solve_nominal_pomdp(drn_export_path, properties, 0.99, silent=False)
-    print("Result:", result.parameter_values)
+    #Instantiate model
+    pmc.instantiate_parameters(list(result.parameter_values.values()))
     if export_instatiated_model:
-        #Instantiate the pMC and export it
-        pmc.instantiate_parameters(list(result.parameter_values.values()))
+        #Export instantiated model.
         pmc.export_to_drn("instantiated_" + drn_export_path)
     
 
@@ -105,11 +105,6 @@ class POMDP:
             options.set_build_choice_labels()
             self.model = stormpy.build_sparse_model_with_options(self.program, options)
         elif self.file_type == ".drn":
-            '''
-            parser_options = stormpy.DirectEncodingParserOptions()
-            parser_options.build_choice_labels = True
-            self.model = stormpy.build_model_from_drn(self.file_path, parser_options)
-            '''
             parser_options = stormpy.DirectEncodingParserOptions()
             parser_options.build_choice_labels = True
             self.model = stormpy.build_model_from_drn(self.file_path, parser_options)
@@ -259,6 +254,7 @@ class PMC:
             for x in range(len(parameters)):
                 parameter_x = parameters[x]
                 par_dict[parameter_x] = Rational(parameter_values[x])
+                print("Instantiated parameter ", str(parameter_x), "with value ", str(parameter_values[x]))
             #Instatiate the model
             self.model = instantiator.instantiate(par_dict)
         else:
@@ -391,11 +387,7 @@ class PMC:
     
     def export_to_drn(self, file):
         stormpy.export_to_drn(self.model, file)
-    
-    '''
-    def export_parametric_to_drn(self, file):
-        stormpy.export_parametric_to_drn(self.model, file)
-    '''
+
 
 
     
