@@ -42,11 +42,12 @@ def solve_pomdp(model, properties, memory_size=2,
     pmc.export_to_drn(drn_export_file)
     ##Use the solver script to obtain parameters for the pMC
     result = solver.solve_nominal_pomdp(drn_export_file, properties, 0.99, silent=False)
-    ##Instantiate the pMC model
-    pmc.instantiate_parameters(list(result.parameter_values.values()))
     if export_instatiated_model:
+        ##Instantiate the pMC model
+        pmc.instantiate_parameters(list(result.parameter_values.values()))
         ##Export the instantiated pMC model.
         pmc.export_to_drn("instantiated_" + drn_export_file)
+    return result
     
 
 ## Class to build and explore a POMDP model.
